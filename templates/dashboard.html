@@ -1,0 +1,115 @@
+
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema de Abrigos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Dashboard</h1>
+    <span class="text-muted">Sistema de Gestão para Abrigos</span>
+</div>
+
+<!-- Cards de Estatísticas -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card card-stats">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title text-muted">Abrigos Ativos</h5>
+                        <h2 class="text-primary">{{ total_abrigos }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-building fa-2x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card card-stats success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title text-muted">Funcionários</h5>
+                        <h2 class="text-success">{{ total_funcionarios }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card card-stats warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title text-muted">Admissões Ativas</h5>
+                        <h2 class="text-warning">{{ total_admissoes }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-check fa-2x text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dados Recentes -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Abrigos Recentes</h5>
+                <a href="/abrigos" class="btn btn-sm btn-outline-primary">Ver Todos</a>
+            </div>
+            <div class="card-body">
+                {% if abrigos_recentes %}
+                    {% for abrigo in abrigos_recentes %}
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <div>
+                            <strong>{{ abrigo.nome }}</strong><br>
+                            <small class="text-muted">{{ abrigo.endereco_cidade }}/{{ abrigo.endereco_estado }}</small>
+                        </div>
+                        <span class="badge bg-info">{{ abrigo.capacidade_total }} vagas</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Nenhum abrigo cadastrado</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Funcionários Recentes</h5>
+                <a href="/funcionarios" class="btn btn-sm btn-outline-primary">Ver Todos</a>
+            </div>
+            <div class="card-body">
+                {% if funcionarios_recentes %}
+                    {% for funcionario in funcionarios_recentes %}
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <div>
+                            <strong>{{ funcionario.pessoa.nome }}</strong><br>
+                            <small class="text-muted">{{ funcionario.cargo }}</small>
+                        </div>
+                        <span class="badge bg-success">{{ funcionario.turno.value }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Nenhum funcionário cadastrado</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+"""

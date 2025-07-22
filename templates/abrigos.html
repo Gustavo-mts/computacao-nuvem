@@ -1,0 +1,75 @@
+
+{% extends "base.html" %}
+
+{% block title %}Abrigos - Sistema de Abrigos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Gestão de Abrigos</h1>
+    <a href="/abrigos/novo" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>Novo Abrigo
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if abrigos %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nome</th>
+                            <th>CNPJ</th>
+                            <th>Localização</th>
+                            <th>Tipo</th>
+                            <th>Capacidade</th>
+                            <th>Responsável</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for abrigo in abrigos %}
+                        <tr>
+                            <td><strong>{{ abrigo.nome }}</strong></td>
+                            <td><small>{{ abrigo.cnpj }}</small></td>
+                            <td>{{ abrigo.endereco_cidade }}/{{ abrigo.endereco_estado }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ abrigo.tipo_abrigo.value }}</span>
+                            </td>
+                            <td>{{ abrigo.capacidade_total }} vagas</td>
+                            <td>{{ abrigo.responsavel_legal }}</td>
+                            <td>
+                                {% if abrigo.ativo %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-building fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">Nenhum abrigo cadastrado</h5>
+                <p class="text-muted">Comece criando seu primeiro abrigo</p>
+                <a href="/abrigos/novo" class="btn btn-success">
+                    <i class="fas fa-plus me-2"></i>Cadastrar Abrigo
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+"""
