@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Detalhes do Abrigo - Sistema de Abrigos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Detalhes do Abrigo</h1>
+    <div>
+        <a href="/abrigos/{{ abrigo.id_abrigo }}/editar" class="btn btn-warning">
+            <i class="fas fa-edit me-2"></i>Editar
+        </a>
+        <a href="/abrigos" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Informações Gerais</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nome:</strong> {{ abrigo.nome }}</p>
+                        <p><strong>CNPJ:</strong> {{ abrigo.cnpj }}</p>
+                        <p><strong>Capacidade Total:</strong> {{ abrigo.capacidade_total }} vagas</p>
+                        <p><strong>Tipo:</strong> <span class="badge bg-info">{{ abrigo.tipo_abrigo.value }}</span></p>
+                        <p><strong>Telefone:</strong> {{ abrigo.telefone_principal }}</p>
+                        <p><strong>Responsável Legal:</strong> {{ abrigo.responsavel_legal }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Endereço:</strong></p>
+                        <address>
+                            {{ abrigo.endereco_rua }}
+                            {% if abrigo.endereco_numero %}, {{ abrigo.endereco_numero }}{% endif %}<br>
+                            {{ abrigo.endereco_bairro }}<br>
+                            {{ abrigo.endereco_cidade }}/{{ abrigo.endereco_estado }}
+                            {% if abrigo.endereco_cep %}<br>CEP: {{ abrigo.endereco_cep }}{% endif %}
+                        </address>
+                        <p><strong>Status:</strong> 
+                            {% if abrigo.ativo %}
+                                <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inativo</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Admissões Ativas</h5>
+                <span class="badge bg-primary">{{ admissoes_ativas|length }}/{{ abrigo.capacidade_total }}</span>
+            </div>
+            <div class="card-body">
+                {% if admissoes_ativas %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Prontuário</th>
+                                    <th>Vaga</th>
+                                    <th>Data Entrada</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for admissao in admissoes_ativas %}
+                                <tr>
+                                    <td>{{ admissao.acolhido.pessoa.nome }}</td>
+                                    <td><span class="badge bg-secondary">{{ admissao.acolhido.numero_prontuario }}</span></td>
+                                    <td>
+                                        {% if admissao.numero_vaga %}
+                                            <span class="badge bg-info">{{ admissao.numero_vaga }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ admissao.data_entrada.strftime('%d/%m/%Y') }}</td>
+                                    <td>
+                                        <a href="/admissoes/{{ admissao.id_acolhimento }}" class="btn btn-sm btn-outline-primary" title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-bed fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Nenhuma admissão ativa no momento</p>
+                        <a href="/admissoes/nova?abrigo={{ abrigo.id_abrigo }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus me-2"></i>Nova Admissão
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Ações</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/abrigos/{{ abrigo.id_abrigo }}/editar" class="btn btn-warning">
+                        <i class="fas fa-edit me-2"></i>Editar Abrigo
+                    </a>
+                    {% if abrigo.ativo %}
+                    <button class="btn btn-outline-secondary" onclick="alterarStatus('{{ abrigo.id_abrigo }}', false)">
+                        <i class="fas fa-pause me-2"></i>Inativar
+                    </button>
+                    {% else %}
+                    <button class="btn btn-outline-success" onclick="alterarStatus('{{ abrigo.id_abrigo }}', true)">
+                        <i class="fas fa-play me-2"></i>Ativar
+                    </button>
+                    {% endif %}
+                    <button class="btn btn-danger" onclick="confirmarRemocao('{{ abrigo.id_abrigo }}', '{{ abrigo.nome }}')" 
+                            {% if admissoes_ativas %}disabled title="Não é possível remover abrigo com admissões ativas"{% endif %}>
+                        <i class="fas fa-trash me-2"></i>Remover
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Estatísticas</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Ocupação:</span>
+                        <span><strong>{{ admissoes_ativas|length }}/{{ abrigo.capacidade_total }}</strong></span>
+                    </div>
+                    <div class="progress">
+                        {% set taxa_ocupacao = (admissoes_ativas|length / abrigo.capacidade_total * 100) %}
+                        <div class="progress-bar 
+                                    {% if taxa_ocupacao >= 90 %}bg-danger
+                                    {% elif taxa_ocupacao >= 70 %}bg-warning
+                                    {% else %}bg-success{% endif %}" 
+                             style="width: {{ taxa_ocupacao }}%">
+                            {{ "%.1f"|format(taxa_ocupacao) }}%
+                        </div>
+                    </div>
+                </div>
+                <p><strong>Vagas Disponíveis:</strong> {{ abrigo.capacidade_total - admissoes_ativas|length }}</p>
+                <p><strong>Total de Admissões:</strong> {{ total_admissoes_historico or 0 }}</p>
+                <p><strong>Admissões Finalizadas:</strong> {{ admissoes_finalizadas or 0 }}</p>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Ações Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/admissoes/nova?abrigo={{ abrigo.id_abrigo }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-plus me-2"></i>Nova Admissão
+                    </a>
+                    <a href="/relatorios/abrigo/{{ abrigo.id_abrigo }}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-chart-bar me-2"></i>Relatório
+                    </a>
+                    <a href="/funcionarios" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-users me-2"></i>Ver Funcionários
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Remoção -->
+<div class="modal fade" id="modalRemocao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Remoção</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja remover o abrigo <strong id="nomeAbrigo"></strong>?</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Esta ação não pode ser desfeita. Todos os dados relacionados serão perdidos.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" style="display: inline;" id="formRemocao">
+                    <button type="submit" class="btn btn-danger">Confirmar Remoção</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmarRemocao(id, nome) {
+    document.getElementById('nomeAbrigo').textContent = nome;
+    document.getElementById('formRemocao').action = '/abrigos/' + id + '/remover';
+    new bootstrap.Modal(document.getElementById('modalRemocao')).show();
+}
+
+function alterarStatus(id, ativo) {
+    const acao = ativo ? 'ativar' : 'inativar';
+    if (confirm('Confirma ' + acao + ' este abrigo?')) {
+        fetch('/abrigos/' + id + '/status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ativo: ativo})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro ao alterar status: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Erro ao alterar status');
+            console.error('Error:', error);
+        });
+    }
+}
+</script>
+{% endblock %}

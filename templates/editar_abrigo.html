@@ -29,7 +29,7 @@
                     <div class="mb-3">
                         <label class="form-label">CNPJ</label>
                         <input type="text" class="form-control" value="{{ abrigo.cnpj }}" disabled>
-                        <div class="form-text">CNPJ não pode ser alterado</div>
+                        <div class="form-text text-muted">CNPJ não pode ser alterado</div>
                     </div>
                 </div>
             </div>
@@ -39,17 +39,172 @@
                     <div class="mb-3">
                         <label class="form-label">Capacidade Total</label>
                         <input type="number" class="form-control" name="capacidade" value="{{ abrigo.capacidade_total }}" min="1" required>
-                        <div class="form-text">
-                            {% if admissoes_ativas %}
-                                Atenção: {{ admissoes_ativas }} admissões ativas atualmente
-                            {% endif %}
+                        {% if admissoes_ativas is defined and admissoes_ativas > 0 %}
+                        <div class="form-text text-warning">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Atenção: {{ admissoes_ativas }} admissões ativas atualmente
                         </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
                         <label class="form-label">Tipo do Abrigo</label>
-                        <select class="form-control" name="tipo" required>
+                        <select class="form-select" name="tipo" required>
                             {% for tipo in tipos_abrigo %}
                             <option value="{{ tipo }}" {% if tipo == abrigo.tipo_abrigo.value %}selected{% endif %}>{{ tipo }}</option>
-                            {%
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Telefone</label>
+                        <input type="tel" class="form-control" name="telefone" value="{{ abrigo.telefone_principal }}" required>
+                    </div>
+                </div>
+            </div>
+            
+            <h5 class="mt-4 mb-3">Endereço</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Rua</label>
+                        <input type="text" class="form-control" name="endereco_rua" value="{{ abrigo.endereco_rua }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Bairro</label>
+                        <input type="text" class="form-control" name="endereco_bairro" value="{{ abrigo.endereco_bairro }}" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Cidade</label>
+                        <input type="text" class="form-control" name="endereco_cidade" value="{{ abrigo.endereco_cidade }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Estado</label>
+                        <input type="text" class="form-control" name="endereco_estado" value="{{ abrigo.endereco_estado }}" maxlength="2" required>
+                        <div class="form-text text-muted">Digite apenas a sigla do estado (ex: SP, RJ)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Responsável Legal</label>
+                <input type="text" class="form-control" name="responsavel" value="{{ abrigo.responsavel_legal }}" required>
+            </div>
+
+            {% if admissoes_ativas is defined and admissoes_ativas > 0 %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Atenção:</strong> Este abrigo possui {{ admissoes_ativas }} admissões ativas. 
+                Tenha cuidado ao reduzir a capacidade para evitar conflitos com as vagas ocupadas.
+            </div>
+            {% endif %}
+
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Informação:</strong> O CNPJ não pode ser alterado por questões de segurança e integridade fiscal.
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="/abrigos/{{ abrigo.id_abrigo }}" class="btn btn-outline-secondary me-md-2">Cancelar</a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-2"></i>Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Máscara para telefone
+    const telefoneInput = document.querySelector('input[name="telefone"]');
+    if (telefoneInput) {
+        telefoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 11) {
+                value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+            } else if (value.length >= 7) {
+                value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+            } else if (value.length >= 3) {
+                value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+            }
+            e.target.value = value;
+        });
+    }
+
+    // Validação de estado (apenas 2 letras)
+    const estadoInput = document.querySelector('input[name="endereco_estado"]');
+    if (estadoInput) {
+        estadoInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').substring(0, 2);
+        });
+    }
+
+    // Validação de capacidade
+    const capacidadeInput = document.querySelector('input[name="capacidade"]');
+    if (capacidadeInput) {
+        capacidadeInput.addEventListener('change', function(e) {
+            const capacidade = parseInt(e.target.value);
+            {% if admissoes_ativas is defined %}
+            const admissoesAtivas = {{ admissoes_ativas }};
+            {% else %}
+            const admissoesAtivas = 0;
+            {% endif %}
+            
+            if (capacidade < admissoesAtivas) {
+                alert('Atenção: A capacidade não pode ser menor que ' + admissoesAtivas + ' (número atual de admissões ativas)');
+                e.target.value = Math.max(capacidade, admissoesAtivas);
+            }
+        });
+    }
+
+    // Validação adicional no submit
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const capacidade = parseInt(document.querySelector('input[name="capacidade"]').value);
+            {% if admissoes_ativas is defined %}
+            const admissoesAtivas = {{ admissoes_ativas }};
+            {% else %}
+            const admissoesAtivas = 0;
+            {% endif %}
+            
+            if (capacidade < admissoesAtivas) {
+                e.preventDefault();
+                alert('Erro: A capacidade (' + capacidade + ') não pode ser menor que o número de admissões ativas (' + admissoesAtivas + ')');
+                return false;
+            }
+
+            // Validar se todos os campos obrigatórios estão preenchidos
+            const requiredFields = form.querySelectorAll('[required]');
+            for (let field of requiredFields) {
+                if (!field.value.trim()) {
+                    e.preventDefault();
+                    let labelText = 'Campo obrigatório';
+                    const label = field.previousElementSibling;
+                    if (label && label.tagName === 'LABEL') {
+                        labelText = label.textContent;
+                    }
+                    alert('Por favor, preencha o campo: ' + labelText);
+                    field.focus();
+                    return false;
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
