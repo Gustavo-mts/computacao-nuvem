@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Funcionário - Sistema de Abrigos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Editar Funcionário</h1>
+    <div>
+        <a href="/funcionarios/{{ funcionario.id_funcionario }}" class="btn btn-outline-info">
+            <i class="fas fa-eye me-2"></i>Ver Detalhes
+        </a>
+        <a href="/funcionarios" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="/funcionarios/{{ funcionario.id_funcionario }}/editar">
+            <h5 class="mb-3">Dados Pessoais</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Nome Completo</label>
+                        <input type="text" class="form-control" name="nome" value="{{ funcionario.pessoa.nome }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">CPF</label>
+                        <input type="text" class="form-control" value="{{ funcionario.pessoa.cpf }}" disabled>
+                        <div class="form-text">CPF não pode ser alterado</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Data de Nascimento</label>
+                        <input type="date" class="form-control" value="{{ funcionario.pessoa.data_nascimento.strftime('%Y-%m-%d') }}" disabled>
+                        <div class="form-text">Data de nascimento não pode ser alterada</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Telefone</label>
+                        <input type="tel" class="form-control" name="telefone" value="{{ funcionario.pessoa.telefone_principal }}" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" class="form-control" name="email" value="{{ funcionario.pessoa.email or '' }}">
+                    </div>
+                </div>
+            </div>
+            
+            <h5 class="mt-4 mb-3">Endereço</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Rua</label>
+                        <input type="text" class="form-control" name="endereco_rua" value="{{ funcionario.pessoa.endereco_rua }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Bairro</label>
+                        <input type="text" class="form-control" name="endereco_bairro" value="{{ funcionario.pessoa.endereco_bairro }}" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Cidade</label>
+                        <input type="text" class="form-control" name="endereco_cidade" value="{{ funcionario.pessoa.endereco_cidade }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Estado</label>
+                        <input type="text" class="form-control" name="endereco_estado" value="{{ funcionario.pessoa.endereco_estado }}" maxlength="2" required>
+                    </div>
+                </div>
+            </div>
+            
+            <h5 class="mt-4 mb-3">Dados Profissionais</h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Matrícula</label>
+                        <input type="text" class="form-control" value="{{ funcionario.matricula }}" disabled>
+                        <div class="form-text">Matrícula não pode ser alterada</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Cargo</label>
+                        <input type="text" class="form-control" name="cargo" value="{{ funcionario.cargo }}" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Turno</label>
+                        <select class="form-control" name="turno" required>
+                            {% for turno in turnos %}
+                            <option value="{{ turno }}" {% if turno == funcionario.turno.value %}selected{% endif %}>{{ turno }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Salário</label>
+                        <input type="number" class="form-control" name="salario" value="{{ funcionario.salario }}" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Data de Admissão</label>
+                        <input type="date" class="form-control" value="{{ funcionario.data_admissao.strftime('%Y-%m-%d') }}" disabled>
+                        <div class="form-text">Data de admissão não pode ser alterada</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Informação:</strong> Campos como CPF, matrícula e datas não podem ser alterados por questões de segurança e integridade dos dados.
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="/funcionarios/{{ funcionario.id_funcionario }}" class="btn btn-outline-secondary me-md-2">Cancelar</a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-2"></i>Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Máscara para telefone
+document.querySelector('input[name="telefone"]').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 11) {
+        value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    } else if (value.length >= 7) {
+        value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+    } else if (value.length >= 3) {
+        value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+    }
+    e.target.value = value;
+});
+
+// Validação de estado (apenas 2 letras)
+document.querySelector('input[name="endereco_estado"]').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').substring(0, 2);
+});
+</script>
+{% endblock %}

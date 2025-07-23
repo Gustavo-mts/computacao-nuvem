@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Abrigo - Sistema de Abrigos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Editar Abrigo</h1>
+    <div>
+        <a href="/abrigos/{{ abrigo.id_abrigo }}" class="btn btn-outline-info">
+            <i class="fas fa-eye me-2"></i>Ver Detalhes
+        </a>
+        <a href="/abrigos" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="/abrigos/{{ abrigo.id_abrigo }}/editar">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Nome do Abrigo</label>
+                        <input type="text" class="form-control" name="nome" value="{{ abrigo.nome }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">CNPJ</label>
+                        <input type="text" class="form-control" value="{{ abrigo.cnpj }}" disabled>
+                        <div class="form-text">CNPJ não pode ser alterado</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Capacidade Total</label>
+                        <input type="number" class="form-control" name="capacidade" value="{{ abrigo.capacidade_total }}" min="1" required>
+                        <div class="form-text">
+                            {% if admissoes_ativas %}
+                                Atenção: {{ admissoes_ativas }} admissões ativas atualmente
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Tipo do Abrigo</label>
+                        <select class="form-control" name="tipo" required>
+                            {% for tipo in tipos_abrigo %}
+                            <option value="{{ tipo }}" {% if tipo == abrigo.tipo_abrigo.value %}selected{% endif %}>{{ tipo }}</option>
+                            {%

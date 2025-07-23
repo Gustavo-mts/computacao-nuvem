@@ -1,7 +1,3 @@
-<!-- =====================================================
-     templates/admissoes.html
-     Página de listagem de admissões
-     ===================================================== -->
 {% extends "base.html" %}
 
 {% block title %}Admissões - Sistema de Abrigos{% endblock %}
@@ -66,14 +62,33 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-outline-primary">
+                                <a href="/admissoes/{{ admissao.id_acolhimento }}" class="btn btn-sm btn-outline-primary" title="Ver detalhes">
                                     <i class="fas fa-eye"></i>
-                                </button>
+                                </a>
                                 {% if admissao.status_ativo %}
-                                <button class="btn btn-sm btn-outline-warning">
+                                <a href="/admissoes/{{ admissao.id_acolhimento }}/finalizar" class="btn btn-sm btn-outline-warning" title="Finalizar admissão">
                                     <i class="fas fa-sign-out-alt"></i>
-                                </button>
+                                </a>
                                 {% endif %}
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="/pessoas/{{ acolhido.pessoa.id_pessoa if acolhido and acolhido.pessoa else '#' }}">
+                                            <i class="fas fa-user me-2"></i>Ver Pessoa
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="/abrigos/{{ admissao.abrigo.id_abrigo }}">
+                                            <i class="fas fa-building me-2"></i>Ver Abrigo
+                                        </a></li>
+                                        {% if admissao.status_ativo %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="/atendimentos/novo?acolhido={{ acolhido.id_acolhido if acolhido else '' }}">
+                                            <i class="fas fa-plus me-2"></i>Novo Atendimento
+                                        </a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -90,6 +105,54 @@
                 </a>
             </div>
         {% endif %}
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Filtros</h6>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="ativa">Ativas</option>
+                            <option value="finalizada">Finalizadas</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Abrigo</label>
+                        <select name="abrigo" class="form-select">
+                            <option value="">Todos os abrigos</option>
+                            {% for abrigo in abrigos_filter %}
+                            <option value="{{ abrigo.id_abrigo }}">{{ abrigo.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Data Início</label>
+                        <input type="date" name="data_inicio" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Data Fim</label>
+                        <input type="date" name="data_fim" class="form-control">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Filtrar
+                        </button>
+                        <a href="/admissoes" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Limpar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

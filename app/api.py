@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from app import database, crud, models, schemas
-from app.models import TipoAbrigo, TurnoEnum, Acolhimento
+from app.models import TipoAbrigo, TurnoEnum, Acolhimento, Funcionario, Abrigo, Atendimento, Familiar
 from datetime import date
 from typing import Optional
 
@@ -280,4 +280,304 @@ async def criar_pessoa_form(
         return templates.TemplateResponse("erro.html", {
             "request": request,
             "erro": f"Erro ao criar pessoa: {str(e)}"
+        })
+
+
+# NOVAS ROTAS PARA VISUALIZAÇÃO, EDIÇÃO E REMOÇÃO
+
+@app.get("/funcionarios/{funcionario_id}", response_class=HTMLResponse)
+async def detalhes_funcionario(funcionario_id: int, request: Request, db: Session = Depends(get_db)):
+    funcionario = db.query(Funcionario).filter(Funcionario.id_funcionario == funcionario_id).first()
+    if not funcionario:
+        raise HTTPException(status_code=404, detail="Funcionário não encontrado")
+    
+    total_atendimentos = db.query(Atendimento).filter(Atendimento.id_funcionario == funcionario_id).count()
+    
+    return templates.TemplateResponse("detalhes_funcionario.html", {
+        "request": request,
+        "funcionario": funcionario,
+        "total_atendimentos": total_atendimentos,
+        "data_atual": date.today()
+    })
+
+
+@app.get("/funcionarios/{funcionario_id}/editar", response_class=HTMLResponse)
+async def editar_funcionario_form(funcionario_id: int, request: Request, db: Session = Depends(get_db)):
+    funcionario = db.query(Funcionario).filter(Funcionario.id_funcionario == funcionario_id).first()
+    if not funcionario:
+        raise HTTPException(status_code=404, detail="Funcionário não encontrado")
+    
+    return templates.TemplateResponse("editar_funcionario.html", {
+        "request": request,
+        "funcionario": funcionario,
+        "turnos": [t.value for t in TurnoEnum]
+    })
+
+
+@app.post("/funcionarios/{funcionario_id}/editar")
+async def atualizar_funcionario(
+    funcionario_id: int,
+    request: Request,
+    nome: str = Form(...),
+    telefone: str = Form(...),
+    email: str = Form(""),
+    endereco_rua: str = Form(...),
+    endereco_bairro: str = Form(...),
+    endereco_cidade: str = Form(...),
+    endereco_estado: str = Form(...),
+    cargo: str = Form(...),
+    salario: float = Form(...),
+    turno: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    try:
+        funcionario = db.query(Funcionario).filter(Funcionario.id_funcionario == funcionario_id).first()
+        if not funcionario:
+            raise HTTPException(status_code=404, detail="Funcionário não encontrado")
+        
+        funcionario.pessoa.nome = nome
+        funcionario.pessoa.telefone_principal = telefone
+        funcionario.pessoa.email = email if email else None
+        funcionario.pessoa.endereco_rua = endereco_rua
+        funcionario.pessoa.endereco_bairro = endereco_bairro
+        funcionario.pessoa.endereco_cidade = endereco_cidade
+        funcionario.pessoa.endereco_estado = endereco_estado
+        
+        funcionario.cargo = cargo
+        funcionario.salario = salario
+        funcionario.turno = TurnoEnum(turno)
+        
+        db.commit()
+        return RedirectResponse(url=f"/funcionarios/{funcionario_id}", status_code=303)
+        
+    except Exception as e:
+        return templates.TemplateResponse("erro.html", {
+            "request": request,
+            "erro": f"Erro ao atualizar funcionário: {str(e)}"
+        })
+
+
+@app.post("/funcionarios/{funcionario_id}/status")
+async def alterar_status_funcionario(funcionario_id: int, request: Request, db: Session = Depends(get_db)):
+    try:
+        funcionario = db.query(Funcionario).filter(Funcionario.id_funcionario == funcionario_id).first()
+        if not funcionario:
+            return {"success": False, "message": "Funcionário não encontrado"}
+        
+        data = await request.json()
+        novo_status = data.get("status")
+        
+        funcionario.status_funcionario = models.StatusFuncionario(novo_status)
+        db.commit()
+        
+        return {"success": True, "message": "Status alterado com sucesso"}
+        
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+@app.post("/funcionarios/{funcionario_id}/remover")
+async def remover_funcionario(funcionario_id: int, request: Request, db: Session = Depends(get_db)):
+    try:
+        funcionario = db.query(Funcionario).filter(Funcionario.id_funcionario == funcionario_id).first()
+        if not funcionario:
+            raise HTTPException(status_code=404, detail="Funcionário não encontrado")
+        
+        atendimentos = db.query(Atendimento).filter(Atendimento.id_funcionario == funcionario_id).count()
+        if atendimentos > 0:
+            funcionario.status_funcionario = models.StatusFuncionario.INATIVO
+            funcionario.pessoa.ativo = False
+        else:
+            db.delete(funcionario)
+            db.delete(funcionario.pessoa)
+        
+        db.commit()
+        return RedirectResponse(url="/funcionarios", status_code=303)
+        
+    except Exception as e:
+        return templates.TemplateResponse("erro.html", {
+            "request": request,
+            "erro": f"Erro ao remover funcionário: {str(e)}"
+        })
+
+
+@app.get("/abrigos/{abrigo_id}", response_class=HTMLResponse)
+async def detalhes_abrigo(abrigo_id: int, request: Request, db: Session = Depends(get_db)):
+    abrigo = db.query(Abrigo).filter(Abrigo.id_abrigo == abrigo_id).first()
+    if not abrigo:
+        raise HTTPException(status_code=404, detail="Abrigo não encontrado")
+    
+    admissoes_ativas = db.query(Acolhimento).filter(
+        Acolhimento.id_abrigo == abrigo_id,
+        Acolhimento.status_ativo == True
+    ).all()
+    
+    total_admissoes_historico = db.query(Acolhimento).filter(Acolhimento.id_abrigo == abrigo_id).count()
+    admissoes_finalizadas = db.query(Acolhimento).filter(
+        Acolhimento.id_abrigo == abrigo_id,
+        Acolhimento.status_ativo == False
+    ).count()
+    
+    return templates.TemplateResponse("detalhes_abrigo.html", {
+        "request": request,
+        "abrigo": abrigo,
+        "admissoes_ativas": admissoes_ativas,
+        "total_admissoes_historico": total_admissoes_historico,
+        "admissoes_finalizadas": admissoes_finalizadas
+    })
+
+
+@app.get("/abrigos/{abrigo_id}/editar", response_class=HTMLResponse)
+async def editar_abrigo_form(abrigo_id: int, request: Request, db: Session = Depends(get_db)):
+    abrigo = db.query(Abrigo).filter(Abrigo.id_abrigo == abrigo_id).first()
+    if not abrigo:
+        raise HTTPException(status_code=404, detail="Abrigo não encontrado")
+    
+    admissoes_ativas = db.query(Acolhimento).filter(
+        Acolhimento.id_abrigo == abrigo_id,
+        Acolhimento.status_ativo == True
+    ).count()
+    
+    return templates.TemplateResponse("editar_abrigo.html", {
+        "request": request,
+        "abrigo": abrigo,
+        "tipos_abrigo": [t.value for t in TipoAbrigo],
+        "admissoes_ativas": admissoes_ativas
+    })
+
+
+@app.post("/abrigos/{abrigo_id}/editar")
+async def atualizar_abrigo(
+    abrigo_id: int,
+    request: Request,
+    nome: str = Form(...),
+    capacidade: int = Form(...),
+    endereco_rua: str = Form(...),
+    endereco_bairro: str = Form(...),
+    endereco_cidade: str = Form(...),
+    endereco_estado: str = Form(...),
+    telefone: str = Form(...),
+    tipo: str = Form(...),
+    responsavel: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    try:
+        abrigo = db.query(Abrigo).filter(Abrigo.id_abrigo == abrigo_id).first()
+        if not abrigo:
+            raise HTTPException(status_code=404, detail="Abrigo não encontrado")
+        
+        abrigo.nome = nome
+        abrigo.capacidade_total = capacidade
+        abrigo.endereco_rua = endereco_rua
+        abrigo.endereco_bairro = endereco_bairro
+        abrigo.endereco_cidade = endereco_cidade
+        abrigo.endereco_estado = endereco_estado
+        abrigo.telefone_principal = telefone
+        abrigo.tipo_abrigo = TipoAbrigo(tipo)
+        abrigo.responsavel_legal = responsavel
+        
+        db.commit()
+        return RedirectResponse(url=f"/abrigos/{abrigo_id}", status_code=303)
+        
+    except Exception as e:
+        return templates.TemplateResponse("erro.html", {
+            "request": request,
+            "erro": f"Erro ao atualizar abrigo: {str(e)}"
+        })
+
+
+@app.post("/abrigos/{abrigo_id}/status")
+async def alterar_status_abrigo(abrigo_id: int, request: Request, db: Session = Depends(get_db)):
+    try:
+        abrigo = db.query(Abrigo).filter(Abrigo.id_abrigo == abrigo_id).first()
+        if not abrigo:
+            return {"success": False, "message": "Abrigo não encontrado"}
+        
+        data = await request.json()
+        novo_status = data.get("ativo")
+        
+        abrigo.ativo = novo_status
+        db.commit()
+        
+        return {"success": True, "message": "Status alterado com sucesso"}
+        
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+@app.post("/abrigos/{abrigo_id}/remover")
+async def remover_abrigo(abrigo_id: int, request: Request, db: Session = Depends(get_db)):
+    try:
+        abrigo = db.query(Abrigo).filter(Abrigo.id_abrigo == abrigo_id).first()
+        if not abrigo:
+            raise HTTPException(status_code=404, detail="Abrigo não encontrado")
+        
+        admissoes_ativas = db.query(Acolhimento).filter(
+            Acolhimento.id_abrigo == abrigo_id,
+            Acolhimento.status_ativo == True
+        ).count()
+        
+        if admissoes_ativas > 0:
+            return templates.TemplateResponse("erro.html", {
+                "request": request,
+                "erro": "Não é possível remover abrigo com admissões ativas"
+            })
+        
+        db.delete(abrigo)
+        db.commit()
+        return RedirectResponse(url="/abrigos", status_code=303)
+        
+    except Exception as e:
+        return templates.TemplateResponse("erro.html", {
+            "request": request,
+            "erro": f"Erro ao remover abrigo: {str(e)}"
+        })
+
+
+@app.get("/admissoes/{admissao_id}", response_class=HTMLResponse)
+async def detalhes_admissao(admissao_id: int, request: Request, db: Session = Depends(get_db)):
+    admissao = db.query(Acolhimento).filter(Acolhimento.id_acolhimento == admissao_id).first()
+    if not admissao:
+        raise HTTPException(status_code=404, detail="Admissão não encontrada")
+    
+    atendimentos = db.query(Atendimento).filter(
+        Atendimento.id_acolhido == admissao.id_acolhido
+    ).order_by(Atendimento.data_atendimento.desc()).all()
+    
+    familiares = db.query(Familiar).filter(
+        Familiar.id_acolhido == admissao.id_acolhido
+    ).all()
+    
+    return templates.TemplateResponse("detalhes_admissao.html", {
+        "request": request,
+        "admissao": admissao,
+        "atendimentos": atendimentos,
+        "familiares": familiares,
+        "data_atual": date.today()
+    })
+
+
+@app.post("/admissoes/{admissao_id}/finalizar")
+async def finalizar_admissao(
+    admissao_id: int,
+    request: Request,
+    data_saida: str = Form(...),
+    motivo_saida: str = Form(""),
+    db: Session = Depends(get_db)
+):
+    try:
+        admissao = db.query(Acolhimento).filter(Acolhimento.id_acolhimento == admissao_id).first()
+        if not admissao:
+            raise HTTPException(status_code=404, detail="Admissão não encontrada")
+        
+        admissao.data_saida = date.fromisoformat(data_saida)
+        admissao.status_ativo = False
+        
+        db.commit()
+        return RedirectResponse(url=f"/admissoes/{admissao_id}", status_code=303)
+        
+    except Exception as e:
+        return templates.TemplateResponse("erro.html", {
+            "request": request,
+            "erro": f"Erro ao finalizar admissão: {str(e)}"
         })

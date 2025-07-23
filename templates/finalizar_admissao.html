@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Finalizar Admissão - Sistema de Abrigos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Finalizar Admissão</h1>
+    <a href="/admissoes/{{ admissao.id_acolhimento }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Voltar
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Confirmar Finalização da Admissão</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong>Pessoa:</strong> {{ admissao.acolhido.pessoa.nome }}</p>
+                        <p><strong>Prontuário:</strong> <span class="badge bg-secondary">{{ admissao.acolhido.numero_prontuario }}</span></p>
+                        <p><strong>Abrigo:</strong> {{ admissao.abrigo.nome }}</p>
+                        <p><strong>Data de Entrada:</strong> {{ admissao.data_entrada.strftime('%d/%m/%Y') }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        {% if admissao.numero_vaga %}
+                        <p><strong>Vaga:</strong> <span class="badge bg-info">{{ admissao.numero_vaga }}</span></p>
+                        {% endif %}
+                        <p><strong>Tempo de Permanência:</strong> 
+                            {% set dias = (data_atual - admissao.data_entrada).days %}
+                            {% if dias == 0 %}
+                                Hoje
+                            {% elif dias == 1 %}
+                                1 dia
+                            {% elif dias < 30 %}
+                                {{ dias }} dias
+                            {% elif dias < 365 %}
+                                {{ (dias / 30)|round|int }} meses
+                            {% else %}
+                                {{ (dias / 365)|round|int }} anos
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <form method="post" action="/admissoes/{{ admissao.id_acolhimento }}/finalizar">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Data de Saída *</label>
+                                <input type="date" class="form-control" name="data_saida" 
+                                       value="{{ data_atual.strftime('%Y-%m-%d') }}" 
+                                       max="{{ data_atual.strftime('%Y-%m-%d') }}"
+                                       min="{{ admissao.data_entrada.strftime('%Y-%m-%d') }}" required>
+                                <div class="form-text">A data não pode ser anterior à data de entrada.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Motivo da Saída</label>
+                                <select class="form-select" name="motivo_saida_categoria">
+                                    <option value="">Selecione um motivo...</option>
+                                    <option value="ALTA_MEDICA">Alta Médica</option>
+                                    <option value="REINTEGRACAO_FAMILIAR">Reintegração Familiar</option>
+                                    <option value="TRANSFERENCIA">Transferência</option>
+                                    <option value="EVASAO">Evasão</option>
+                                    <option value="DESLIGAMENTO_VOLUNTARIO">Desligamento Voluntário</option>
+                                    <option value="DESLIGAMENTO_DISCIPLINAR">Desligamento Disciplinar</option>
+                                    <option value="OBITO">Óbito</option>
+                                    <option value="OUTROS">Outros</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Observações Adicionais</label>
+                        <textarea class="form-control" name="observacoes_saida" rows="4" 
+                                  placeholder="Descreva detalhes sobre a finalização da admissão, destino da pessoa, contatos realizados, etc."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="notificar_responsaveis" value="true" id="notificarResponsaveis">
+                            <label class="form-check-label" for="notificarResponsaveis">
+                                Notificar responsáveis/familiares (se houver contatos cadastrados)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Atenção:</strong> Esta ação finalizará a admissão e liberará a vaga no abrigo. 
+                        A pessoa será marcada com status de saída e não poderá mais ser admitida neste abrigo 
+                        até que seja feito um novo cadastro de admissão.
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/admissoes/{{ admissao.id_acolhimento }}" class="btn btn-outline-secondary me-md-2">Cancelar</a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-sign-out-alt me-2"></i>Finalizar Admissão
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Informações Importantes</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>Próximos Passos</h6>
+                    <ul class="mb-0 small">
+                        <li>A vaga será liberada imediatamente</li>
+                        <li>Relatórios de permanência serão atualizados</li>
+                        <li>Histórico será mantido para consulta</li>
+                        <li>Familiares podem ser notificados</li>
+                    </ul>
+                </div>
+
+                <div class="mt-3">
+                    <h6>Contatos de Emergência</h6>
+                    {% if familiares_emergencia %}
+                        {% for familiar in familiares_emergencia %}
+                        <div class="border p-2 mb-2 rounded">
+                            <strong>{{ familiar.nome }}</strong><br>
+                            <small class="text-muted">{{ familiar.parentesco }}</small><br>
+                            <small>{{ familiar.telefone_principal }}</small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small">Nenhum contato de emergência cadastrado</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Estatísticas da Admissão</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Atendimentos Realizados:</strong> {{ total_atendimentos or 0 }}</p>
+                <p><strong>Último Atendimento:</strong> 
+                    {% if ultimo_atendimento %}
+                        {{ ultimo_atendimento.data_atendimento.strftime('%d/%m/%Y') }}
+                    {% else %}
+                        <span class="text-muted">Nenhum</span>
+                    {% endif %}
+                </p>
+                <p><strong>Funcionário Responsável:</strong> 
+                    {% if funcionario_responsavel %}
+                        {{ funcionario_responsavel.pessoa.nome }}
+                    {% else %}
+                        <span class="text-muted">Não definido</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
