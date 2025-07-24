@@ -190,15 +190,15 @@ psql -U homeless_user -h localhost homeless_db < backup.sql
 
 
 ### Versão Atual (v1.0)
-- ✅ CRUD básico de abrigos, funcionários e acolhidos
-- ✅ Sistema de admissões
-- ✅ Dashboard com estatísticas
-- ✅ Interface web responsiva
+- CRUD básico de abrigos, funcionários e acolhidos
+- Sistema de admissões
+- Dashboard com estatísticas
+- Interface web responsiva
 
 
 ### Próximas Versões
-- 🔄 Sistema de autenticação
-- 🔄 Relatórios avançados
-- 🔄 API REST completa
-- 🔄 Notificações por email
-- 🔄 Sistema de backup automático
+- Sistema de autenticação
+- Relatórios avançados
+- API REST completa
+- Notificações por email
+- Sistema de backup automático
