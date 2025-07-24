@@ -319,10 +319,45 @@ class PessoaAcolhidaResponse(PessoaAcolhidaBase):
         from_attributes = True
 
 
-# ========================= ACOLHIMENTO/ADMISSÃO =========================
+# ========================= ADMISSÃO/ACOLHIMENTO - CORRIGIDO =========================
 
+# Para admissões de pessoas no sistema (usando pessoa_id)
+class AdmissaoBase(BaseModel):
+    pessoa_id: int  # ID do acolhido na tabela pessoas
+    abrigo_id: int
+    data_admissao: date
+
+
+class AdmissaoCreate(AdmissaoBase):
+    numero_vaga: Optional[str] = None
+
+
+class AdmissaoUpdate(BaseModel):
+    numero_vaga: Optional[str] = None
+    data_saida: Optional[date] = None
+    status_ativo: Optional[bool] = None
+    motivo_saida: Optional[str] = None
+    observacoes_saida: Optional[str] = None
+
+
+class AdmissaoResponse(BaseModel):
+    id_acolhimento: int
+    id_acolhido: int  # Este será mapeado de pessoa_id
+    id_abrigo: int
+    data_entrada: date  # Este será mapeado de data_admissao
+    data_saida: Optional[date] = None
+    numero_vaga: Optional[str] = None
+    status_ativo: bool
+    motivo_saida: Optional[str] = None
+    observacoes_saida: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
+
+# Para acolhimentos internos (usando id_acolhido direto da tabela acolhidos)
 class AcolhimentoBase(BaseModel):
-    id_acolhido: int
+    id_acolhido: int  # ID real da tabela acolhidos
     id_abrigo: int
     data_entrada: date
 
@@ -349,13 +384,6 @@ class AcolhimentoResponse(AcolhimentoBase):
     
     class Config:
         from_attributes = True
-
-
-# Aliases para compatibilidade
-AdmissaoBase = AcolhimentoBase
-AdmissaoCreate = AcolhimentoCreate
-AdmissaoUpdate = AcolhimentoUpdate
-AdmissaoResponse = AcolhimentoResponse
 
 
 class AdmissaoCompletoResponse(BaseModel):

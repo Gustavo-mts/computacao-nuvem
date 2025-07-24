@@ -415,32 +415,42 @@ def listar_pessoas_acolhidas(db: Session, ativas: bool = True):
 # ========================= ADMISSÕES =========================
 
 def registrar_admissao(db: Session, admissao: schemas.AdmissaoCreate):
-    # Verificar se acolhido existe
-    acolhido = buscar_acolhido_por_id(db, admissao.pessoa_id)
-    if not acolhido:
-        raise ValueError("Pessoa acolhida não encontrada")
-    
-    # Verificar se abrigo existe e tem capacidade
-    abrigo = buscar_abrigo_por_id(db, admissao.abrigo_id)
-    if not abrigo:
-        raise ValueError("Abrigo não encontrado")
-    
-    # Verificar capacidade do abrigo
-    admissoes_ativas = db.query(Acolhimento).filter(
-        Acolhimento.id_abrigo == admissao.abrigo_id,
-        Acolhimento.status_ativo == True
-    ).count()
-    
-    if admissoes_ativas >= abrigo.capacidade_total:
-        raise ValueError("Abrigo está com capacidade máxima")
-    
-    # Verificar se já tem admissão ativa
-    if buscar_admissao_ativa_por_acolhido(db, admissao.pessoa_id):
-        raise ValueError("Pessoa já possui admissão ativa")
-    
+    """
+    Registra uma nova admissão - usa AdmissaoCreate
+    """
     try:
+        # CORRIGIDO: pessoa_id agora se refere ao ID da tabela acolhidos
+        # Primeiro, encontrar o acolhido pelo pessoa_id (que é o ID da pessoa)
+        acolhido = db.query(Acolhido).filter(Acolhido.id_pessoa == admissao.pessoa_id).first()
+        if not acolhido:
+            raise ValueError("Pessoa acolhida não encontrada")
+        
+        # Verificar se abrigo existe e tem capacidade
+        abrigo = buscar_abrigo_por_id(db, admissao.abrigo_id)
+        if not abrigo:
+            raise ValueError("Abrigo não encontrado")
+        
+        # Verificar capacidade do abrigo
+        admissoes_ativas = db.query(Acolhimento).filter(
+            Acolhimento.id_abrigo == admissao.abrigo_id,
+            Acolhimento.status_ativo == True
+        ).count()
+        
+        if admissoes_ativas >= abrigo.capacidade_total:
+            raise ValueError("Abrigo está com capacidade máxima")
+        
+        # Verificar se já tem admissão ativa
+        admissao_existente = db.query(Acolhimento).filter(
+            Acolhimento.id_acolhido == acolhido.id_acolhido,
+            Acolhimento.status_ativo == True
+        ).first()
+        
+        if admissao_existente:
+            raise ValueError("Pessoa já possui admissão ativa")
+        
+        # Criar novo acolhimento usando o ID correto da tabela acolhidos
         db_acolhimento = Acolhimento(
-            id_acolhido=admissao.pessoa_id,
+            id_acolhido=acolhido.id_acolhido,  # Usar o ID correto da tabela acolhidos
             id_abrigo=admissao.abrigo_id,
             data_entrada=admissao.data_admissao,
             numero_vaga=admissao.numero_vaga,
@@ -454,8 +464,7 @@ def registrar_admissao(db: Session, admissao: schemas.AdmissaoCreate):
     except Exception as e:
         db.rollback()
         raise e
-
-
+    
 def buscar_admissao_por_id(db: Session, admissao_id: int):
     """Busca admissão por ID"""
     return db.query(Acolhimento).filter(Acolhimento.id_acolhimento == admissao_id).first()

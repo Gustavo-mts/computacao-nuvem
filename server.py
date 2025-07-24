@@ -11,7 +11,6 @@ from app.api import app
 
 
 def main():
-    """Inicia o servidor web do sistema"""
     
     print("Iniciando Sistema de Gestão para Abrigos...")
     print("Servidor web sendo inicializado...")
@@ -29,12 +28,12 @@ def main():
     # Configurações do servidor
     uvicorn.run(
         "app.api:app",
-        host="0.0.0.0",              # Aceita conexões de qualquer IP
-        port=8000,                   # Porta padrão HTTP alternativa
-        reload=True,                 # Auto-reload em desenvolvimento
-        reload_dirs=["app", "templates"],  # Diretórios monitorados
-        log_level="info",            # Nível de log apropriado
-        access_log=True              # Log de acesso habilitado
+        host="0.0.0.0",              #conexões de qualquer IP
+        port=8000,                   #padrão HTTP alternativa
+        reload=True,                 # Auto-reload 
+        reload_dirs=["app", "templates"],#Diretórios monitorados
+        log_level="info",            
+        access_log=True             
     )
 
 

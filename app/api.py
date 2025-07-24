@@ -183,6 +183,7 @@ async def nova_admissao_form(request: Request, db: Session = Depends(get_db)):
         acolhidos_disponiveis = []
         all_acolhidos = crud.listar_acolhidos(db, ativos=True)
         
+        # Verificar quais acolhidos não têm admissão ativa
         for acolhido in all_acolhidos:
             admissao_ativa = db.query(Acolhimento)\
                               .filter(Acolhimento.id_acolhido == acolhido.id_acolhido)\
@@ -193,6 +194,14 @@ async def nova_admissao_form(request: Request, db: Session = Depends(get_db)):
                 acolhidos_disponiveis.append(acolhido)
         
         abrigos = crud.listar_abrigos(db, ativos=True)
+        
+        # Adicionar informações de capacidade aos abrigos
+        for abrigo in abrigos:
+            admissoes_ativas = db.query(Acolhimento).filter(
+                Acolhimento.id_abrigo == abrigo.id_abrigo,
+                Acolhimento.status_ativo == True
+            ).count()
+            abrigo.vagas_disponiveis = abrigo.capacidade_total - admissoes_ativas
         
         return templates.TemplateResponse("nova_admissao.html", {
             "request": request,
@@ -207,31 +216,39 @@ async def nova_admissao_form(request: Request, db: Session = Depends(get_db)):
             "erro": f"Erro ao carregar formulário: {str(e)}"
         })
 
-
 @app.post("/admissoes/criar")
 async def criar_admissao_form(
     request: Request,
-    acolhido_id: int = Form(...),
+    pessoa_id: int = Form(...),  # MUDOU: agora esperando pessoa_id em vez de acolhido_id
     abrigo_id: int = Form(...),
     data_admissao: str = Form(...),
     numero_vaga: str = Form(""),
     db: Session = Depends(get_db)
 ):
     try:
+        # Usar AdmissaoCreate com os campos corretos
         admissao_data = schemas.AdmissaoCreate(
-            pessoa_id=acolhido_id,
+            pessoa_id=pessoa_id,  # Agora está correto
             abrigo_id=abrigo_id,
             data_admissao=date.fromisoformat(data_admissao),
             numero_vaga=numero_vaga if numero_vaga else None
         )
-        crud.registrar_admissao(db, admissao_data)
+        
+        # Chamar a função CRUD corrigida
+        resultado = crud.registrar_admissao(db, admissao_data)
+        
         return RedirectResponse(url="/admissoes", status_code=303)
+        
+    except ValueError as ve:
+        return templates.TemplateResponse("erro.html", {
+            "request": request,
+            "erro": str(ve)
+        })
     except Exception as e:
         return templates.TemplateResponse("erro.html", {
             "request": request,
             "erro": f"Erro ao criar admissão: {str(e)}"
         })
-
 
 @app.get("/pessoas/nova", response_class=HTMLResponse)
 async def nova_pessoa_form(request: Request):

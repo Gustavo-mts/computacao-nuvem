@@ -33,10 +33,10 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Pessoa para Admissão</label>
-                        <select class="form-select" name="acolhido_id" required>
+                        <select class="form-select" name="pessoa_id" required>
                             <option value="">Selecione uma pessoa...</option>
                             {% for acolhido in acolhidos %}
-                            <option value="{{ acolhido.id_acolhido }}">
+                            <option value="{{ acolhido.id_pessoa }}">
                                 {{ acolhido.pessoa.nome }} - {{ acolhido.numero_prontuario }}
                             </option>
                             {% endfor %}
@@ -53,7 +53,8 @@
                             <option value="">Selecione um abrigo...</option>
                             {% for abrigo in abrigos %}
                             <option value="{{ abrigo.id_abrigo }}">
-                                {{ abrigo.nome }} - {{ abrigo.endereco_cidade }} ({{ abrigo.capacidade_total }} vagas)
+                                {{ abrigo.nome }} - {{ abrigo.endereco_cidade }} 
+                                ({{ abrigo.vagas_disponiveis }}/{{ abrigo.capacidade_total }} vagas disponíveis)
                             </option>
                             {% endfor %}
                         </select>
@@ -109,7 +110,7 @@
                 <div class="col-md-4">
                     <a href="/abrigos/novo" class="btn btn-outline-primary w-100">
                         <i class="fas fa-building me-2"></i>Cadastrar Novo Abrigo
-                    </a>
+                    </div>
                 </div>
                 <div class="col-md-4">
                     <a href="/funcionarios/novo" class="btn btn-outline-primary w-100">
@@ -122,4 +123,42 @@
 </div>
 
 {% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validação do formulário
+    const form = document.querySelector('form');
+    const selectAbrigo = document.querySelector('select[name="abrigo_id"]');
+    
+    if (form && selectAbrigo) {
+        form.addEventListener('submit', function(e) {
+            const abrigoSelecionado = selectAbrigo.value;
+            const opcaoSelecionada = selectAbrigo.querySelector(`option[value="${abrigoSelecionado}"]`);
+            
+            if (opcaoSelecionada) {
+                const texto = opcaoSelecionada.textContent;
+                const match = texto.match(/\((\d+)\/\d+ vagas disponíveis\)/);
+                
+                if (match && parseInt(match[1]) === 0) {
+                    e.preventDefault();
+                    alert('Atenção: O abrigo selecionado está com lotação máxima!');
+                    return false;
+                }
+            }
+        });
+    }
+    
+    // Debug - Log dos dados do formulário antes do envio
+    const formulario = document.querySelector('form');
+    if (formulario) {
+        formulario.addEventListener('submit', function(e) {
+            const formData = new FormData(formulario);
+            console.log('Dados sendo enviados:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
