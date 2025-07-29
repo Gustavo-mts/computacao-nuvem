@@ -41,7 +41,6 @@ temp/
 # Configuration files
 .env
 .flaskenv
-*.ini
 *.cfg
 
 # Build artifacts
