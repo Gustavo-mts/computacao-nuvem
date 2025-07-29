@@ -1,20 +1,16 @@
-Nome do Seu Projeto
-Descrição do Projeto
-Este é um projeto web desenvolvido com FastAPI em Python, utilizando PostgreSQL como banco de dados. Ele é conteinerizado usando Docker e orquestrado com Docker Compose, facilitando o setup e a execução em qualquer ambiente.
+# Sistema de Gestão para Abrigos
 
-(Sugestão: Adicione uma breve descrição do que o seu projeto faz aqui. Ex: "Este aplicativo tem como objetivo gerenciar informações sobre pessoas em situação de rua, permitindo o registro, consulta e atualização de dados relevantes.")
+Sistema web desenvolvido em Python/FastAPI para gerenciar abrigos e pessoas em situação de vulnerabilidade social.
 
-Funcionalidades
-API RESTful: Construído com FastAPI para uma comunicação eficiente e estruturada.
+## Funcionalidades
 
-Persistência de Dados: Utiliza PostgreSQL para armazenamento seguro e escalável de informações.
-
-Containerização: Empacotado com Docker para garantir consistência em diferentes ambientes.
-
-Orquestração Simples: Gerenciado via Docker Compose para fácil inicialização e gerenciamento de serviços (aplicativo e banco de dados).
-
-Serviço de Arquivos Estáticos: Configurado para servir arquivos CSS, JavaScript e imagens a partir de uma pasta static.
-
+- **Gestão de Abrigos**: Cadastro, edição e controle de capacidade
+- **Gestão de Funcionários**: Controle de equipe com vinculação a abrigos
+- **Gestão de Acolhidos**: Cadastro de pessoas em situação de vulnerabilidade
+- **Sistema de Admissões**: Controle de entrada e saída nos abrigos
+- **Atendimentos**: Registro de atendimentos realizados
+- **Relatórios**: Estatísticas e relatórios de ocupação
+- **Dashboard**: Visão geral do sistema
 Pré-requisitos
 Antes de iniciar o projeto, certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
 
