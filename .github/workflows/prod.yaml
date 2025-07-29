@@ -1,0 +1,31 @@
+name: CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v3
+
+    - name: Instalar SSH key
+      run: |
+        echo "${{ secrets.EC2_KEY }}" > key.pem
+        chmod 600 key.pem
+
+    - name: Enviar código para EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          cd ./HomeLess
+          git pull origin main
+          sudo docker compose up -d --build
+        EOF
