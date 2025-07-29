@@ -71,7 +71,7 @@ O aplicativo estará disponível em http://localhost:8000.
 Estrutura do Projeto
 A estrutura básica do seu projeto deve ser algo parecido com isto:
 
-.
+```
 ├── Dockerfile
 ├── compose.yaml
 ├── requirements.txt
@@ -90,7 +90,7 @@ A estrutura básica do seu projeto deve ser algo parecido com isto:
 ├── tests/                # Pasta para seus arquivos de teste
 │   └── test_basic.py
 └── pytest.ini            # Arquivo de configuração do Pytest para ignorar testes de dependências
-
+```
 Desenvolvimento
 Executando Testes
 Para executar os testes do seu projeto, utilize o pytest. Certifique-se de que o pytest.ini esteja configurado para ignorar os testes das dependências, focando apenas nos seus próprios testes.
