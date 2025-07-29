@@ -3,15 +3,10 @@
 ## Descrição do Projeto
 Sistema web desenvolvido em Python/FastAPI para gerenciar abrigos e pessoas em situação de vulnerabilidade social.
 
-## Funcionalidades
+Funcionalidades
+API RESTful: Construído com FastAPI para uma comunicação eficiente e estruturada.
 
-- **Gestão de Abrigos**: Cadastro, edição e controle de capacidade
-- **Gestão de Funcionários**: Controle de equipe com vinculação a abrigos
-- **Gestão de Acolhidos**: Cadastro de pessoas em situação de vulnerabilidade
-- **Sistema de Admissões**: Controle de entrada e saída nos abrigos
-- **Atendimentos**: Registro de atendimentos realizados
-- **Relatórios**: Estatísticas e relatórios de ocupação
-- **Dashboard**: Visão geral do sistema
+Persistência de Dados: Utiliza PostgreSQL para armazenamento seguro e escalável de informações.
 
 ## Pré-requisitos
 Antes de iniciar o projeto, certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
