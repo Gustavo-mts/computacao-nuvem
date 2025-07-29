@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://homeless_user:sua_senha_aqui@db:5432/homeless_db
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: homeless_db
+      DB_USER: homeless_user
+      DB_PASSWORD: sua_senha_aqui
+
+      DEBUG: True
+      SECRET_KEY: sua_chave_secreta_aqui
+  # Use postgres/example user/password credentials
+  db:
+    image: postgres:17.4-alpine
+    environment:
+      POSTGRES_PASSWORD: sua_senha_aqui
+      POSTGRES_USER: homeless_user
+      POSTGRES_DB: homeless_db
+    ports:
+      - "5432:5432"
