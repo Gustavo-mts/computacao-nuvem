@@ -1,0 +1,72 @@
+# Byte-code files
+*.pyc
+__pycache__/
+*.pyd
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Virtual environment
+.venv/
+venv/
+env/
+/bin/
+/include/
+/lib/
+/share/
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.bak
+*.swo
+
+# OS generated files
+.DS_Store
+.localized
+Thumbs.db
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+temp/
+
+# Configuration files
+.env
+.flaskenv
+*.ini
+*.cfg
+
+# Build artifacts
+dist/
+build/
+*.egg/
+*.whl
+
+# Alembic migrations (if you don't want to track them)
+# migrations/
+# alembic/versions/
+
+# Jupyter Notebook files
+.ipynb_checkpoints
+
+# pytest files
+.pytest_cache/
+htmlcov/
+.coverage
+
+# mypy
+.mypy_cache/
+
+# Pipenv
+Pipfile.lock
+
+# Poetry
+poetry.lock

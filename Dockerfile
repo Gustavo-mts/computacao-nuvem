@@ -1,3 +1,4 @@
+
 # Imagem base
 FROM python:3.12-slim
 
@@ -28,3 +29,4 @@ EXPOSE 8000
 
 # Comando padrão para rodar o servidor
 CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
